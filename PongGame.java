@@ -4,10 +4,13 @@ import java.awt.*;
 public class PongGame extends JPanel {
     static final int WINDOW_WIDTH = 640, WINDOW_HEIGHT = 480;
     private Ball gameball;
+    private Paddle userPaddle, pcPaddle;
 
     public PongGame() {
         // Initialize the gameball
         gameball = new Ball(300, 200, 3, 3, 3, Color.YELLOW, 10);
+        userPaddle = new Paddle(10, 200, 75, 3, Color.BLUE);
+        pcPaddle = new Paddle(610, 200, 75, 3, Color.RED);
     }
 
     @Override
@@ -20,7 +23,12 @@ public class PongGame extends JPanel {
 
         // Draw the ball
         gameball.paint(g);
+
+        // Draw the paddle
+        userPaddle.paint(g);
+        pcPaddle.paint(g);
     }
+
 
     public void gameLogic() {
 

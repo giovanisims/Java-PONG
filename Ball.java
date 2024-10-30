@@ -31,15 +31,25 @@ public class Ball {
         y += cy;
     }
 
-    public void bounceOffEdges(int top, int bottom) {
-        if (y > bottom - size || y < top){
+    public void bounceOffEdges(int top, int bottom){
+
+        //if the y value is at the bottom of the screen
+        if (y > bottom - size){
+            reverseY();
+        }
+        //if y value is at top of screen
+        else if(y < top){
             reverseY();
         }
 
-        if (x > 640 - size || x < 0){
+        //if x value is at left or right side
+        //hard-coded values, we will delete this section later
+        if(x < 0){
             reverseX();
         }
-
+        else if(x > 640 - size){
+            reverseX();
+        }
 
     }
 

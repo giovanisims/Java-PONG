@@ -36,6 +36,7 @@ public class Main {
                 game.gameLogic();
 
                 game.repaint();
+
             }
         });
 

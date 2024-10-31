@@ -99,6 +99,10 @@ public class GameScreen extends JPanel implements ActionListener, KeyListener {
             g.fillOval(x, y, diameter, diameter);
             playerPaddle.draw(g);
             aiPaddle.draw(g);
+
+            g.setColor(Color.RED);
+            g.setFont(new Font("Arial", Font.BOLD, 20));
+            g.drawString("Pontuação:" + playerScore, 10, 30);
         } else {
             g.setColor(Color.BLACK);
             g.drawString("Game Over", getWidth() / 2 - 30, getHeight() / 2);

@@ -1,74 +1,139 @@
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 import java.util.Random;
 import javax.swing.*;
 
-class GameScreen extends JFrame {
+abstract class Paddle {
+    protected int x, y, width, height;
 
-    public GameScreen() {
-        super("Pong game!");
+    public Paddle(int x, int y, int width, int height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
 
-        // Set the layout of the window
-        setLayout(new BorderLayout());
+    public abstract void draw(Graphics g);
+    public abstract void move();
+}
 
-        // Add the ball
-        Ball ball = new Ball();
-        add(ball, BorderLayout.CENTER);
+class PlayerPaddle extends Paddle {
+    public PlayerPaddle(int x, int y, int width, int height) {
+        super(x, y, width, height);
+    }
 
-        // Add the player bar
-        Bar bar = new Bar();
-        add(bar, BorderLayout.WEST);
+    @Override
+    public void draw(Graphics g) {
+        g.setColor(Color.BLACK);
+        g.fillRect(x, y, width, height);
+    }
 
-        // Window settings
-        setSize(800, 800);  // Set the size of the window
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  // Close the program when the window is closed
-        setVisible(true);  // Display the window
+    @Override
+    public void move() {
+        // Não utilizado
+    }
 
-        // Request focus for the bar to ensure it receives key events
-        bar.requestFocusInWindow();
+    public void moveUp() {
+        if (y > 0) {
+            y -= 45;
+        }
+    }
 
-        // Timer to update the player's position
-        Timer timer = new Timer(30, e -> bar.move());
-        timer.start();
+    public void moveDown() {
+        if (y < 800 - height) {
+            y += 45;
+        }
     }
 }
 
-class Ball extends JPanel implements ActionListener {
-    private int x, y, diameter;
+class AIPaddle extends Paddle {
+    private int speed = 15;
+    public AIPaddle(int x, int y, int width, int height) {
+        super(x, y, width, height);
+    }
+
+    @Override
+    public void draw(Graphics g) {
+        g.setColor(Color.BLACK);
+        g.fillRect(x, y, width, height);
+    }
+
+    @Override
+    public void move() {
+        // Movimento automático
+        y += speed;
+        if (y <= 0 || y >= 800 - height) {
+            speed = -speed;
+        }
+    }
+}
+
+public class GameScreen extends JPanel implements ActionListener, KeyListener {
+    private int x = 399, y = 399, diameter = 30;
     private int xSpeed, ySpeed;
     private Timer timer;
+    private boolean gameRunning = true;
     private Random random;
+    private PlayerPaddle playerPaddle;
+    private AIPaddle aiPaddle;
+    private int playerScore = 0;
 
-    public Ball() {
-        diameter = 20;
-        x = (800 - diameter) / 2;
-        y = (800 - diameter) / 2;
+    public GameScreen() {
         random = new Random();
-        xSpeed = random.nextInt(5) + 1;
-        ySpeed = random.nextInt(5) + 1;
+        xSpeed = random.nextInt(7,12) + 1;
+        ySpeed = random.nextInt(7,12) + 1;
         timer = new Timer(30, this);
         timer.start();
+        addKeyListener(this);
+        setFocusable(true);
+
+        playerPaddle = new PlayerPaddle(50, 350, 10, 100);
+        aiPaddle = new AIPaddle(740, 350, 10, 100);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(Color.RED);
-        g.fillOval(x, y, diameter, diameter);
+        if (gameRunning) {
+            g.setColor(Color.RED);
+            g.fillOval(x, y, diameter, diameter);
+            playerPaddle.draw(g);
+            aiPaddle.draw(g);
+        } else {
+            g.setColor(Color.BLACK);
+            g.drawString("Game Over", getWidth() / 2 - 30, getHeight() / 2);
+        }
     }
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(800, 800);  // Set the preferred size of the panel
+        return new Dimension(800, 800);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        moveBall();
-        repaint();
+        if (gameRunning) {
+            moveBall();
+            playerPaddle.move();
+            aiPaddle.move();
+            repaint();
+        }
+    }
+
+    private void resetGame() {
+        x = random.nextInt(300, 500);
+        y = random.nextInt(300, 400);
+        if(random.nextBoolean()) {
+            xSpeed = random.nextInt(7,12) + 1;
+        } else {
+            xSpeed = -random.nextInt(7,12) + 1;
+        }
+        
+        ySpeed = random.nextInt(7,12) + 1;
+        playerPaddle = new PlayerPaddle(50, 350, 10, 100);
+        aiPaddle = new AIPaddle(740, 350, 10, 100);
+        gameRunning = true;
+        timer.start();
     }
 
     private void moveBall() {
@@ -81,67 +146,39 @@ class Ball extends JPanel implements ActionListener {
         if (y <= 0 || y >= getHeight() - diameter) {
             ySpeed = -ySpeed;
         }
-    }
-}
-
-class Bar extends JPanel implements KeyListener {
-    private int y, width, height;
-    private int ySpeed;
-
-    public Bar() {
-        y = 300;  // Initial position
-        width = 20;
-        height = 100;
-        ySpeed = 0;
-        setFocusable(true);
-        addKeyListener(this);
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(50, 800);  // Set the preferred size of the bar
-    }
-
-    // Draw the player bar
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        g.setColor(Color.BLACK);
-        g.fillRect(30, y, width, height);  // Draw the player bar on the left side
-
-    }
-
-    // Move the player bar
-    public void move() {
-        y += ySpeed;
-        if (y < 0) {
-            y = 0;
+        if (x <= playerPaddle.x + playerPaddle.width && y + diameter >= playerPaddle.y && y <= playerPaddle.y + playerPaddle.height) {
+            xSpeed = -xSpeed;
+        } else if (x + diameter >= aiPaddle.x && y + diameter >= aiPaddle.y && y <= aiPaddle.y + aiPaddle.height) {
+            xSpeed = -xSpeed;
+        } else if (x <= 0) {
+            gameRunning = false;
+            timer.stop();
+        } else if (x >= getWidth() - diameter) {
+            playerScore += 10;
+            System.out.println("Score: " + playerScore);
+            resetGame();
         }
-        if (y > getHeight() - height) {
-            y = getHeight() - height;
-        }
-        repaint();
-
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_UP) {
-            ySpeed = -5;
+        int key = e.getKeyCode();
+        if (key == KeyEvent.VK_UP) {
+            playerPaddle.moveUp();
         }
-        if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            ySpeed = 5;
+        if (key == KeyEvent.VK_DOWN) {
+            playerPaddle.moveDown();
         }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN) {
-            ySpeed = 0;
-        }
+        // Não utilizado
     }
 
     @Override
     public void keyTyped(KeyEvent e) {
+        // Não utilizado
     }
+
 }

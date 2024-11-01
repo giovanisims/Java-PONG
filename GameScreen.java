@@ -1,94 +1,34 @@
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Random;
-import javax.swing.*;
 
-abstract class Paddle {
-    protected int x, y, width, height;
-
-    public Paddle(int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-    }
-
-    public abstract void draw(Graphics g);
-    public abstract void move();
-}
-
-class PlayerPaddle extends Paddle {
-    public PlayerPaddle(int x, int y, int width, int height) {
-        super(x, y, width, height);
-    }
-
-    @Override
-    public void draw(Graphics g) {
-        g.setColor(Color.BLACK);
-        g.fillRect(x, y, width, height);
-    }
-
-    @Override
-    public void move() {
-        // Não utilizado
-    }
-
-    public void moveUp() {
-        if (y > 0) {
-            y -= 45;
-        }
-    }
-
-    public void moveDown() {
-        if (y < 800 - height) {
-            y += 45;
-        }
-    }
-}
-
-class AIPaddle extends Paddle {
-    private int speed = 15;
-    public AIPaddle(int x, int y, int width, int height) {
-        super(x, y, width, height);
-    }
-
-    @Override
-    public void draw(Graphics g) {
-        g.setColor(Color.BLACK);
-        g.fillRect(x, y, width, height);
-    }
-
-    @Override
-    public void move() {
-        // Movimento automático
-        y += speed;
-        if (y <= 0 || y >= 800 - height) {
-            speed = -speed;
-        }
-    }
-}
-
-public class GameScreen extends JPanel implements ActionListener, KeyListener {
-    private int x = 399, y = 399, diameter = 30;
-    private int xSpeed, ySpeed;
-    private Timer timer;
-    private boolean gameRunning = true;
-    private Random random;
-    private PlayerPaddle playerPaddle;
-    private AIPaddle aiPaddle;
-    private int playerScore = 0;
+class GameScreen extends JPanel implements ActionListener, KeyListener {
+    private static final int DIAMETER = 30, TIMER_DELAY = 30;
+    private int x = 399, y = 399, xSpeed, ySpeed, playerScore = 0;
+    private boolean gameRunning = true, upPressed = false, downPressed = false;
+    private double gameLevel = 1;
+    private final Timer timer;
+    private final Random RANDOM;
+    private final PlayerPaddle PLAYERPADDLE;
+    private final AIPaddle AIPADDLE;
+    int windowWidth = getPreferredSize().width, windowHeight = getPreferredSize().height;
 
     public GameScreen() {
-        random = new Random();
-        xSpeed = random.nextInt(7,12) + 1;
-        ySpeed = random.nextInt(7,12) + 1;
-        timer = new Timer(30, this);
-        timer.start();
-        addKeyListener(this);
-        setFocusable(true);
+        RANDOM = new Random();
+        resetBallSpeed();
 
-        playerPaddle = new PlayerPaddle(50, 350, 10, 100);
-        aiPaddle = new AIPaddle(740, 350, 10, 100);
+        // Game refresh rate in ms, higher means slower game
+        timer = new Timer(TIMER_DELAY, this);
+        timer.start();
+        setFocusable(true);
+        addKeyListener(this);
+
+        int PADDLEWIDTH = 20;
+        int PADDLEHEIGHT = windowHeight / 8;
+
+        PLAYERPADDLE = new PlayerPaddle(50, windowHeight / 2 - PADDLEHEIGHT / 2, PADDLEWIDTH, PADDLEHEIGHT, windowHeight);
+        AIPADDLE = new AIPaddle(windowWidth - 70, windowHeight / 2 - PADDLEHEIGHT / 2, PADDLEWIDTH, PADDLEHEIGHT, windowHeight);
     }
 
     @Override
@@ -96,70 +36,85 @@ public class GameScreen extends JPanel implements ActionListener, KeyListener {
         super.paintComponent(g);
         if (gameRunning) {
             g.setColor(Color.RED);
-            g.fillOval(x, y, diameter, diameter);
-            playerPaddle.draw(g);
-            aiPaddle.draw(g);
-
-            g.setColor(Color.RED);
-            g.setFont(new Font("Arial", Font.BOLD, 20));
-            g.drawString("Pontuação:" + playerScore, 10, 30);
+            g.fillOval(x, y, DIAMETER, DIAMETER);
+            PLAYERPADDLE.draw(g);
+            AIPADDLE.draw(g);
+            g.setFont(new Font("Arial", Font.BOLD, 40));
+            g.drawString("Score: " + playerScore, 10, 40);
         } else {
             g.setColor(Color.BLACK);
-            g.drawString("Game Over", getWidth() / 2 - 30, getHeight() / 2);
+            g.setFont(new Font("Arial", Font.BOLD, 50));
+            g.drawString("Game Over", getWidth() / 2 - 100, getHeight() / 2);
         }
     }
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(800, 800);
+        return new Dimension(1280, 720);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (gameRunning) {
             moveBall();
-            playerPaddle.move();
-            aiPaddle.move();
+            AIPADDLE.move();
+            handlePaddleMovement(); // Handles paddle movement based on key state
             repaint();
         }
     }
 
-    private void resetGame() {
-        x = random.nextInt(300, 500);
-        y = random.nextInt(300, 400);
-        if(random.nextBoolean()) {
-            xSpeed = random.nextInt(7,12) + 1;
-        } else {
-            xSpeed = -random.nextInt(7,12) + 1;
+    private void handlePaddleMovement() {
+        if (upPressed) {
+            PLAYERPADDLE.moveUp();
         }
-        
-        ySpeed = random.nextInt(7,12) + 1;
-        playerPaddle = new PlayerPaddle(50, 350, 10, 100);
-        aiPaddle = new AIPaddle(740, 350, 10, 100);
+        if (downPressed) {
+            PLAYERPADDLE.moveDown();
+        }
+    }
+
+    private void resetGame() {
+        x = 300 + RANDOM.nextInt(201);
+        y = 300 + RANDOM.nextInt(101);
+        resetBallSpeed();
+        PLAYERPADDLE.y = 350;
+        AIPADDLE.y = 350;
         gameRunning = true;
         timer.start();
+    }
+
+    private void resetBallSpeed() {
+        xSpeed = (int) ((-(RANDOM.nextInt(3) + 5)) * gameLevel);
+        ySpeed = (int) ((RANDOM.nextBoolean() ? 1 : -1) * (RANDOM.nextInt(3) + 5) * gameLevel);
     }
 
     private void moveBall() {
         x += xSpeed;
         y += ySpeed;
+        handleCollisions();
+    }
 
-        if (x <= 0 || x >= getWidth() - diameter) {
+    private void handleCollisions() {
+        if (x <= 0 || x >= getWidth() - DIAMETER) {
             xSpeed = -xSpeed;
         }
-        if (y <= 0 || y >= getHeight() - diameter) {
+        if (y <= 0 || y >= getHeight() - DIAMETER) {
             ySpeed = -ySpeed;
         }
-        if (x <= playerPaddle.x + playerPaddle.width && y + diameter >= playerPaddle.y && y <= playerPaddle.y + playerPaddle.height) {
+        handlePaddleCollision();
+    }
+
+    private void handlePaddleCollision() {
+        if (x <= PLAYERPADDLE.x + PLAYERPADDLE.width && y + DIAMETER >= PLAYERPADDLE.y && y <= PLAYERPADDLE.y + PLAYERPADDLE.height) {
             xSpeed = -xSpeed;
-        } else if (x + diameter >= aiPaddle.x && y + diameter >= aiPaddle.y && y <= aiPaddle.y + aiPaddle.height) {
+        } else if (x + DIAMETER >= AIPADDLE.x && y + DIAMETER >= AIPADDLE.y && y <= AIPADDLE.y + AIPADDLE.height) {
             xSpeed = -xSpeed;
         } else if (x <= 0) {
             gameRunning = false;
             timer.stop();
-        } else if (x >= getWidth() - diameter) {
+        } else if (x >= getWidth() - DIAMETER) {
             playerScore += 10;
             System.out.println("Score: " + playerScore);
+            gameLevel += 0.1;
             resetGame();
         }
     }
@@ -168,21 +123,24 @@ public class GameScreen extends JPanel implements ActionListener, KeyListener {
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
         if (key == KeyEvent.VK_UP) {
-            playerPaddle.moveUp();
+            upPressed = true;
         }
         if (key == KeyEvent.VK_DOWN) {
-            playerPaddle.moveDown();
+            downPressed = true;
         }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        // Não utilizado
+        int key = e.getKeyCode();
+        if (key == KeyEvent.VK_UP) {
+            upPressed = false;
+        }
+        if (key == KeyEvent.VK_DOWN) {
+            downPressed = false;
+        }
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {
-        // Não utilizado
-    }
-
+    public void keyTyped(KeyEvent e) {}
 }

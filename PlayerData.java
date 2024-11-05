@@ -1,8 +1,11 @@
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class PlayerData {
-    public static void main(String[] args) {
+
+    ArrayList<Player> GetTop5 () {
+
         String file = "Data.txt";
         List<Player> playerDataList = new ArrayList<>();
 
@@ -21,13 +24,33 @@ public class PlayerData {
             e.printStackTrace();
         }
 
-        playerDataList.add(new Player("NEW2", 1050));
 
         playerDataList.sort(Comparator.comparingInt(p -> -p.highscore));
 
-        if (playerDataList.size() > 5) {
-            playerDataList = playerDataList.subList(0, 5);
+        return new ArrayList<Player>(playerDataList.subList(0, 5));
+
+    }
+
+    void SavePlayerData (Player player) {
+        String file = "Data.txt";
+        List<Player> playerDataList = new ArrayList<>();
+
+        try (FileInputStream input = new FileInputStream(file);
+             ObjectInputStream ois = new ObjectInputStream(input)) {
+            while (true) {
+                try {
+                    playerDataList.add((Player) ois.readObject());
+                } catch (EOFException e) {
+                    break;
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found. Creating a new file.");
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
         }
+
+        playerDataList.add(player);
 
         try (FileOutputStream output = new FileOutputStream(file);
              ObjectOutputStream oos = new ObjectOutputStream(output)) {
@@ -37,7 +60,7 @@ public class PlayerData {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        playerDataList.forEach(System.out::println);
     }
+
+
 }

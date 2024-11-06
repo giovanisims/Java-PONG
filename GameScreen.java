@@ -1,19 +1,22 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.Random;
+
 class GameScreen extends Screen implements ActionListener, KeyListener {
     private static final int DIAMETER = 30, TIMER_DELAY = 30;
-    private int x = 399, y = 399, xSpeed, ySpeed, playerScore = 0;
-    private boolean gameRunning = true, upPressed = false, downPressed = false;
-    private double gameLevel = 1;
     private final Timer timer;
     private final Random RANDOM;
     private final PlayerPaddle PLAYERPADDLE;
     private final AIPaddle AIPADDLE;
     private final JFrame frame;
     int windowWidth = getPreferredSize().width, windowHeight = getPreferredSize().height;
-    double bounceMultiplier = 1;
+    private int x = 399, y = 399, xSpeed, ySpeed, playerScore = 0;
+    private boolean gameRunning = true, upPressed = false, downPressed = false;
+    private double gameLevel = 1;
 
     public GameScreen(JFrame frame) {
         this.frame = frame;
@@ -78,8 +81,8 @@ class GameScreen extends Screen implements ActionListener, KeyListener {
     }
 
     private void resetBallSpeed() {
-        xSpeed = (int) ((-(RANDOM.nextInt(3) + 5)) * gameLevel);
-        ySpeed = (int) ((RANDOM.nextBoolean() ? 1 : -1) * (RANDOM.nextInt(3) + 5) * gameLevel);
+        xSpeed = (int) ((-(RANDOM.nextInt(3) + 7)) * gameLevel);
+        ySpeed = (int) ((RANDOM.nextBoolean() ? 1 : -1) * (RANDOM.nextInt(3) + 7) * gameLevel);
     }
 
     private void moveBall() {
@@ -87,35 +90,27 @@ class GameScreen extends Screen implements ActionListener, KeyListener {
         y += ySpeed;
         handleCollisions();
     }
+
     private void handleCollisions() {
-        if (x <= 0) {
+        if (x < PLAYERPADDLE.x - PLAYERPADDLE.width - 30) {
             gameRunning = false;
             timer.stop();
             showGameOverScreen();
-        } else if (x >= getWidth() - DIAMETER) {
+        } else if (x > AIPADDLE.x + PLAYERPADDLE.width + DIAMETER) {
             playerScore += 10;
             System.out.println("Score: " + playerScore);
             gameLevel += 0.3;
-            bounceMultiplier = 0.5;
             resetGame();
         } else if (x <= PLAYERPADDLE.x + PLAYERPADDLE.width && y + DIAMETER >= PLAYERPADDLE.y && y <= PLAYERPADDLE.y + PLAYERPADDLE.height) {
             xSpeed = -xSpeed;
-            bounceMultiplier += bounceMultiplier;
-            xSpeed *= bounceMultiplier;
-            ySpeed *= bounceMultiplier;
         } else if (x + DIAMETER >= AIPADDLE.x && y + DIAMETER >= AIPADDLE.y && y <= AIPADDLE.y + AIPADDLE.height) {
             xSpeed = -xSpeed;
-            bounceMultiplier += bounceMultiplier;
-            xSpeed *= bounceMultiplier;
-            ySpeed *= bounceMultiplier;
         }
 
         if (y <= 0 || y >= getHeight() - DIAMETER) {
             ySpeed = -ySpeed;
-            bounceMultiplier += bounceMultiplier;
-            xSpeed *= bounceMultiplier;
-            ySpeed *= bounceMultiplier;
         }
+
     }
 
     private void showGameOverScreen() {
@@ -151,5 +146,6 @@ class GameScreen extends Screen implements ActionListener, KeyListener {
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {}
+    public void keyTyped(KeyEvent e) {
+    }
 }

@@ -1,5 +1,7 @@
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class PlayerData {
 
@@ -26,7 +28,13 @@ public class PlayerData {
 
         playerDataList.sort(Comparator.comparingInt(p -> -p.highscore));
 
-        return new ArrayList<Player>(playerDataList.subList(0, 5));
+        int playerDataListSize = playerDataList.size();
+
+        if (playerDataListSize > 5) {
+            return new ArrayList<Player>(playerDataList.subList(0, 5));
+        } else {
+            return new ArrayList<Player>(playerDataList.subList(0, playerDataListSize));
+        }
 
     }
 

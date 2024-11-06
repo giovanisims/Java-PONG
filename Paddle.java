@@ -13,5 +13,6 @@ abstract class Paddle {
     }
 
     public abstract void draw(Graphics g);
+
     public abstract void move();
 }

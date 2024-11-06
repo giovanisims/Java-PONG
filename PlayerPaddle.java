@@ -14,7 +14,8 @@ class PlayerPaddle extends Paddle {
     }
 
     @Override
-    public void move() {}
+    public void move() {
+    }
 
     public void moveUp() {
         if (y > 0) {

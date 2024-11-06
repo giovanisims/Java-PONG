@@ -92,7 +92,7 @@ class GameScreen extends Screen implements ActionListener, KeyListener {
     }
 
     private void handleCollisions() {
-        if (x < PLAYERPADDLE.x - PLAYERPADDLE.width - 30) {
+        if (x < PLAYERPADDLE.x - PLAYERPADDLE.width - DIAMETER) {
             gameRunning = false;
             timer.stop();
             showGameOverScreen();

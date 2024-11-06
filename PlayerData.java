@@ -1,10 +1,9 @@
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class PlayerData {
 
-    ArrayList<Player> GetTop5 () {
+    ArrayList<Player> getTop5() {
 
         String file = "Data.txt";
         List<Player> playerDataList = new ArrayList<>();
@@ -31,7 +30,7 @@ public class PlayerData {
 
     }
 
-    void SavePlayerData (Player player) {
+    void savePlayerData(Player player) {
         String file = "Data.txt";
         List<Player> playerDataList = new ArrayList<>();
 

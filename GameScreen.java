@@ -2,8 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Random;
-
-class GameScreen extends JPanel implements ActionListener, KeyListener {
+class GameScreen extends Screen implements ActionListener, KeyListener {
     private static final int DIAMETER = 30, TIMER_DELAY = 30;
     private int x = 399, y = 399, xSpeed, ySpeed, playerScore = 0;
     private boolean gameRunning = true, upPressed = false, downPressed = false;
@@ -12,16 +11,17 @@ class GameScreen extends JPanel implements ActionListener, KeyListener {
     private final Random RANDOM;
     private final PlayerPaddle PLAYERPADDLE;
     private final AIPaddle AIPADDLE;
+    private final JFrame frame;
     int windowWidth = getPreferredSize().width, windowHeight = getPreferredSize().height;
+    double bounceMultiplier = 1;
 
-    public GameScreen() {
+    public GameScreen(JFrame frame) {
+        this.frame = frame;
         RANDOM = new Random();
         resetBallSpeed();
 
-        // Game refresh rate in ms, higher means slower game
         timer = new Timer(TIMER_DELAY, this);
         timer.start();
-        setFocusable(true);
         addKeyListener(this);
 
         int PADDLEWIDTH = 20;
@@ -40,17 +40,12 @@ class GameScreen extends JPanel implements ActionListener, KeyListener {
             PLAYERPADDLE.draw(g);
             AIPADDLE.draw(g);
             g.setFont(new Font("Arial", Font.BOLD, 40));
-            g.drawString("Score: " + playerScore, 10, 40);
-        } else {
-            g.setColor(Color.BLACK);
-            g.setFont(new Font("Arial", Font.BOLD, 50));
-            g.drawString("Game Over", getWidth() / 2 - 100, getHeight() / 2);
+            g.drawString(getPlayerScoreText(), getPreferredSize().width / 2 - 80, 40);
         }
     }
 
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(1280, 720);
+    public String getPlayerScoreText() {
+        return "Score: " + playerScore;
     }
 
     @Override
@@ -58,7 +53,7 @@ class GameScreen extends JPanel implements ActionListener, KeyListener {
         if (gameRunning) {
             moveBall();
             AIPADDLE.move();
-            handlePaddleMovement(); // Handles paddle movement based on key state
+            handlePaddleMovement();
             repaint();
         }
     }
@@ -92,31 +87,45 @@ class GameScreen extends JPanel implements ActionListener, KeyListener {
         y += ySpeed;
         handleCollisions();
     }
-
     private void handleCollisions() {
-        if (x <= 0 || x >= getWidth() - DIAMETER) {
-            xSpeed = -xSpeed;
-        }
-        if (y <= 0 || y >= getHeight() - DIAMETER) {
-            ySpeed = -ySpeed;
-        }
-        handlePaddleCollision();
-    }
-
-    private void handlePaddleCollision() {
-        if (x <= PLAYERPADDLE.x + PLAYERPADDLE.width && y + DIAMETER >= PLAYERPADDLE.y && y <= PLAYERPADDLE.y + PLAYERPADDLE.height) {
-            xSpeed = -xSpeed;
-        } else if (x + DIAMETER >= AIPADDLE.x && y + DIAMETER >= AIPADDLE.y && y <= AIPADDLE.y + AIPADDLE.height) {
-            xSpeed = -xSpeed;
-        } else if (x <= 0) {
+        if (x <= 0) {
             gameRunning = false;
             timer.stop();
+            showGameOverScreen();
         } else if (x >= getWidth() - DIAMETER) {
             playerScore += 10;
             System.out.println("Score: " + playerScore);
-            gameLevel += 0.1;
+            gameLevel += 0.3;
+            bounceMultiplier = 0.5;
             resetGame();
+        } else if (x <= PLAYERPADDLE.x + PLAYERPADDLE.width && y + DIAMETER >= PLAYERPADDLE.y && y <= PLAYERPADDLE.y + PLAYERPADDLE.height) {
+            xSpeed = -xSpeed;
+            bounceMultiplier += bounceMultiplier;
+            xSpeed *= bounceMultiplier;
+            ySpeed *= bounceMultiplier;
+        } else if (x + DIAMETER >= AIPADDLE.x && y + DIAMETER >= AIPADDLE.y && y <= AIPADDLE.y + AIPADDLE.height) {
+            xSpeed = -xSpeed;
+            bounceMultiplier += bounceMultiplier;
+            xSpeed *= bounceMultiplier;
+            ySpeed *= bounceMultiplier;
         }
+
+        if (y <= 0 || y >= getHeight() - DIAMETER) {
+            ySpeed = -ySpeed;
+            bounceMultiplier += bounceMultiplier;
+            xSpeed *= bounceMultiplier;
+            ySpeed *= bounceMultiplier;
+        }
+    }
+
+    private void showGameOverScreen() {
+        SwingUtilities.invokeLater(() -> {
+            frame.getContentPane().removeAll();
+            GameOverScreen gameOverScreen = new GameOverScreen(frame, playerScore);
+            frame.add(gameOverScreen);
+            frame.revalidate();
+            frame.repaint();
+        });
     }
 
     @Override

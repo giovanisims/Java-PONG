@@ -17,9 +17,15 @@ public class MenuScreen extends Screen {
 
         JPanel top5Panel = new JPanel();
         top5Panel.setLayout(new BoxLayout(top5Panel, BoxLayout.Y_AXIS));
+        JLabel leaderboard = new JLabel("Leaderboard");
+        leaderboard.setFont(new Font("IMPACT", Font.PLAIN, 60));
+        top5Panel.add(leaderboard);
+        leaderboard.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         for (Player player : top5) {
-            JLabel playerLabel = new JLabel(player.name + ": " + player.highscore);
-            playerLabel.setFont(new Font("Arial", Font.PLAIN, 60));
+            JLabel playerLabel = new JLabel((top5.indexOf(player) + 1) + " - " + player.name + ": " + player.highscore, SwingConstants.CENTER);
+            playerLabel.setFont(new Font("Arial", Font.PLAIN, 50));
+            playerLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             top5Panel.add(playerLabel);
         }
 

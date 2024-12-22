@@ -1,7 +1,7 @@
-# PJBL-POO
+# Java PONG
 
 Description:
-PJBL-POO is a Java and Swing implementation of the classic "PONG" game. Navigate using the arrow keys to defend your side of the screen from the ball while aiming to hit it onto the opponent's side. The ball spawns with a random direction, always moving towards the player initially, and temporarily speeds up with each bounce until it reaches an edge. Its base speed also increases with each level.
+Java PONG is a Java and Swing implementation of the classic "PONG" game. Navigate using the arrow keys to defend your side of the screen from the ball while aiming to hit it onto the opponent's side. The ball spawns with a random direction, always moving towards the player initially, and temporarily speeds up with each bounce until it reaches an edge. Its base speed also increases with each level.
 
 How to Play:
 * Use the arrow keys to move your paddle up or down.

@@ -1,15 +1,15 @@
 # PJBL-POO
 
 Description:
-This is the classic "PONG" game implemented with Java and Swing. You use the arrow keys to move, your goal is to protect your side of the screen from the ball, and to try and hit the ball on the other side of the screen, the ball has a random spawn direction, however it does always spawn towards the player, it also has a temporary speed up with each bounce until it hits one of the edges, and it has a base speed increase per level. 
+PJBL-POO is a Java and Swing implementation of the classic "PONG" game. Navigate using the arrow keys to defend your side of the screen from the ball while aiming to hit it onto the opponent's side. The ball spawns with a random direction, always moving towards the player initially, and temporarily speeds up with each bounce until it reaches an edge. Its base speed also increases with each level.
 
 How to Play:
-* Use the arrow keys on your keyboard to go up or down.
-* Dont let the ball hit your side of the screen.
-* Try and hit the other side of the screen.
-* Try to get the highest score possible.
+* Use the arrow keys to move your paddle up or down.
+* Prevent the ball from reaching your side of the screen.
+* Hit the ball to the other side to score.
+* Hit the ball to the other side to score.
   
 Features:
-* Start Screen: A start screen with the game title and the leaderboard.
-* Leaderboard: A leadeboard that is saved to the device.
-* Game Over Screen: A game over screen displays the score and provides options to restart or quit the game.
+* Start Screen: Displays the game title and leaderboard.
+* Leaderboard: Persistently saves scores on your device.
+* Game Over Screen: Shows your score and offers options to restart or quit.
